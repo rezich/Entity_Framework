@@ -1,19 +1,19 @@
 Gen :: #type u64;
 
 Handle :: struct (T: Type) {
-    #assert is_subclass_of(type_info(T), "Entity");
+    #assert is_subclass_of(type_info(T), "Entity_Base");
     ptr: *T;
     gen: Gen;
     loc: Bucket_Locator;
 }
 
-Entity :: struct {
+Entity_Base :: struct {
     despawning: bool;
     gen: Gen;
     loc: Bucket_Locator;
 }
 
-spawn :: (entity: $T/Entity) -> Handle(T) {
+spawn :: (entity: $T/Entity_Base) -> Handle(T) {
     #insert #run sprint("gen := *entity_storage.gens[Entity_Types.%];", T);
     #insert #run sprint("storage := *entity_storage._%;", T);
     locator := bucket_array_add(storage, entity);
@@ -41,11 +41,11 @@ despawn :: (handle: Handle($T)) {
 }
 
 // pretty sure this is just going to be for despawning yourself?
-despawn :: inline (entity: *$T/Entity) {
+despawn :: inline (entity: *$T/Entity_Base) {
     despawn(get_handle(entity)); //TODO: don't be lazy here
 }
 
-get_handle :: (entity: *$T/Entity) -> Handle(T) #must {
+get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
     handle: Handle(T);
     handle.ptr = entity;
     handle.gen = entity.gen;
@@ -77,8 +77,6 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
 #placeholder NUM_ENTITY_TYPES;
 #placeholder Entity_Types;
 #placeholder Entity_Storage;
-#placeholder cleanup_despawning_entities;
-#placeholder reset_entity_storage;
 
 entity_storage: Entity_Storage;
 

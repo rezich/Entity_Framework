@@ -1,4 +1,5 @@
-prebuild_step :: (w: Workspace, autoload: bool = true, autoload_directory: string = "entities") {
+prebuild_step :: (w: Workspace, entity_type_name: string = "Entity", autoload: bool = true, autoload_directory: string = "entities") {
+    _entity_type_name = entity_type_name;
     if autoload {
         entity_files := file_list(autoload_directory);
         for entity_files add_build_string(tprint("#load \"%\";", it), w);
@@ -13,8 +14,8 @@ build_step :: inline (message: *Message) {
             typechecked := cast(*Message_Typechecked) message;
             for typechecked.structs {
                 code_struct := it.expression;
-                if is_subclass_of(code_struct.defined_type, "Entity") {
-                    name := code_struct.defined_type.name;
+                name := code_struct.defined_type.name;
+                if is_subclass_of(code_struct.defined_type, "Entity_Base") && name != _entity_type_name {
                     added := array_add_if_unique(*entity_type_names, name);
                     if added {
                         print("Detected entity '%'.\n", name);
@@ -37,6 +38,7 @@ build_step :: inline (message: *Message) {
 
 #scope_file
 
+_entity_type_name: string;
 
 generated_code := false;
 
@@ -110,7 +112,7 @@ generate_code :: (w: Workspace) {
         print_to_builder(*reset_entity_storage.builder, "    bucket_array_reset(*_%);\n", it);
         print_to_builder(*reset_entity_storage_individual.builder, "        case .%1; bucket_array_reset(*_%1);\n", it);
         print_to_builder(*despawning.builder, "        _%: [..] Bucket_Locator;\n", it);
-        print_to_builder(*cleanup.builder, "    for despawning._%1\n        bucket_array_remove(*_%1, it);\n    array_reset(*despawning._%1);\n", it);
+        print_to_builder(*cleanup.builder, "    for despawning._%1{\n        bucket_array_remove(*_%1, it);}\n    array_reset(*despawning._%1);\n", it);
     }
     
     prep(*entity_storage);

@@ -5,4 +5,4 @@
 #if BUILDING
     #load "src/Meta.jai";
 else
-    #load "src/Entity.jai";
+    #load "src/Entity_Base.jai";
