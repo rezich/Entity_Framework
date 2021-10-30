@@ -7,4 +7,4 @@
 #if BUILDING
     #load "src/Meta.jai";
 else
-    #load "src/Entity_Base.jai";
+    #load "src/Entity_Framework.jai";

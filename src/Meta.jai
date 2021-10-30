@@ -38,8 +38,6 @@ build_step :: inline (message: *Message) {
 #scope_file
 
 
-//TODO: make all of this generation 1000x better
-
 _entity_type_name: string;
 
 generated_code := false;
@@ -53,100 +51,105 @@ generate_code :: (w: Workspace) {
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
 
-    String_Prep :: struct { //TODO: better name
-        str: string;
-        builder: String_Builder;
+    add :: (data: string, args: .. Any) #expand {
+        temp := sprint(data, ..args);
+        print(temp);
+        add_build_string(temp, `w);
     }
 
-    prep :: (q: *String_Prep) { //TODO: better name
-        q.str = builder_to_string(*q.builder);
-    }
+    entity_storage: String_Builder; defer free_buffers(*entity_storage);
+    reset_entity_storage: String_Builder; defer free_buffers(*reset_entity_storage);
+    reset_entity_storage_individual: String_Builder; defer free_buffers(*reset_entity_storage_individual);
+    despawning: String_Builder; defer free_buffers(*despawning);
+    cleanup: String_Builder; defer free_buffers(*cleanup);
+    cleanup_individual: String_Builder; defer free_buffers(*cleanup_individual);
 
-    entity_storage: String_Prep;
-    defer free_buffers(*entity_storage.builder);
-    reset_entity_storage: String_Prep;
-    defer free_buffers(*reset_entity_storage.builder);
-    reset_entity_storage_individual: String_Prep;
-    defer free_buffers(*reset_entity_storage_individual.builder);
-    despawning: String_Prep;
-    defer free_buffers(*despawning.builder);
-    cleanup: String_Prep;
-    defer free_buffers(*cleanup.builder);
-    cleanup_individual: String_Prep;
-    defer free_buffers(*cleanup_individual.builder);
-
-    for it, i: entity_type_names {
+    for entity_type_names {
         items_per_bucket, success := table_find(entity_items_per_bucket, it);
         assert(success);
-        print_to_builder(*entity_storage.builder, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
-        print_to_builder(*reset_entity_storage.builder, "    bucket_array_reset(*_%);\n", it);
-        print_to_builder(*reset_entity_storage_individual.builder, "        case .%1;\n            cleanup_despawning_entities(.%1);\n            bucket_array_reset(*_%1);\n", it);
-        print_to_builder(*despawning.builder, "        _%: [..] Bucket_Locator;\n", it);
-        print_to_builder(*cleanup.builder, "    for despawning._%1\n        bucket_array_remove(*_%1, it);\n    array_reset(*despawning._%1);\n", it);
-        print_to_builder(*cleanup_individual.builder, "        case .%1; for despawning._%1 {\n            bucket_array_remove(*_%1, it);\n            array_reset(*despawning._%1);\n        }\n", it);
+        print_to_builder(*entity_storage, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
+        print_to_builder(*reset_entity_storage, "    bucket_array_reset(*_%);\n", it);
+        print_to_builder(*reset_entity_storage_individual, "        case .%1;\n            cleanup_despawning_entities(.%1);\n            bucket_array_reset(*_%1);\n", it);
+        print_to_builder(*despawning, "        _%: [..] Bucket_Locator;\n", it);
+        print_to_builder(*cleanup, "    for despawning._%1\n        bucket_array_remove(*_%1, it);\n    array_reset(*despawning._%1);\n", it);
+        print_to_builder(*cleanup_individual, "        case .%1; for despawning._%1 {\n            bucket_array_remove(*_%1, it);\n            array_reset(*despawning._%1);\n        }\n", it);
     }
-    
-    prep(*entity_storage);
-    prep(*reset_entity_storage);
-    prep(*reset_entity_storage_individual);
-    prep(*despawning);
-    prep(*cleanup);
-    prep(*cleanup_individual);
-    
-    build_string := sprint(#string DONE
-NUM_ENTITY_TYPES :: %1;
+
+    print("----------------------------------------\n");
+
+    add(#string XX
+
+NUM_ENTITY_TYPES :: %;
+
+XX,     entity_type_names.count
+    );
+
+    add(#string XX
 
 Entity_Storage :: struct {
-%3
-    last_id: [%1] u32;
+%1
+    last_id: [%2] u32;
     despawning: struct {
-%7    }
-    types: [%1] Type : .[ %2 ]; // not actually used for anything...
+%3    }
+    types: [%2] Type : .[ %4 ]; // not actually used for anything...
 }
 
+XX,     builder_to_string(*entity_storage),
+        entity_type_names.count,
+        builder_to_string(*despawning),
+        type_names
+    );
+
+    add(#string XX
+
 Entity_Types :: enum {
-    %4;
+    %1;
 }
+
+XX,     type_names_for_enum
+    );
+
+    add(#string XX
 
 reset_entity_storage :: () {
     cleanup_despawning_entities();
     using entity_storage;
     for 0..NUM_ENTITY_TYPES-1 last_id[it] = 0;
-%5}
+%1}
 
 reset_entity_storage :: (type: Entity_Types) {
     using entity_storage;
     last_id[type] = 0;
     if type == {
-%6    }
+%2    }
 }
+
+XX,     builder_to_string(*reset_entity_storage),
+        builder_to_string(*reset_entity_storage_individual)
+    );
+
+    add(#string XX
+
+cleanup_despawning_entities :: () {
+    using entity_storage;
+%1}
 
 cleanup_despawning_entities :: (type: Entity_Types) {
     using entity_storage;
     if type == {
-%9    }
+%2    }
 }
 
-cleanup_despawning_entities :: () {
-    using entity_storage;
-%8}
-
-#import "Bucket_Array"; // ???
-DONE,
-        entity_type_names.count,
-        type_names,
-        entity_storage.str,
-        type_names_for_enum,
-        reset_entity_storage.str,
-        reset_entity_storage_individual.str,
-        despawning.str,
-        cleanup.str,
-        cleanup_individual.str
+XX,     builder_to_string(*cleanup),
+        builder_to_string(*cleanup_individual)
     );
-    
-    add_build_string(build_string, w);
-    
-    print("Adding build string:\n----\n%\n----\n", build_string);
+
+    add(#string XX
+
+#import "Bucket_Array";
+
+XX  );
+    print("----------------------------------------\n");
 }
 
 get_bucket_size :: (header: *Code_Struct) -> int {
