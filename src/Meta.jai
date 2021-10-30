@@ -67,12 +67,12 @@ generate_code :: (w: Workspace) {
     for entity_type_names {
         items_per_bucket, success := table_find(entity_items_per_bucket, it);
         assert(success);
-        print_to_builder(*entity_storage, "    _%1: Bucket_Array(%1, %2, true);\n", it, items_per_bucket);
-        print_to_builder(*reset_entity_storage, "    bucket_array_reset(*_%);\n", it);
-        print_to_builder(*reset_entity_storage_individual, "        case .%1;\n            cleanup_despawning_entities(.%1);\n            bucket_array_reset(*_%1);\n", it);
+        print_to_builder(*entity_storage, "    _%1: Entity_Substorage(%1, %2);\n", it, items_per_bucket);
+        print_to_builder(*reset_entity_storage, "    reset_entity_storage(.%);\n", it);
+        print_to_builder(*reset_entity_storage_individual, "        case .%1;\n            cleanup_despawning_entities(.%1);\n            bucket_array_reset(*_%1.storage);\n            _%1.last_id = 0;\n", it);
         print_to_builder(*despawning, "        _%: [..] Bucket_Locator;\n", it);
-        print_to_builder(*cleanup, "    for despawning._%1\n        bucket_array_remove(*_%1, it);\n    array_reset(*despawning._%1);\n", it);
-        print_to_builder(*cleanup_individual, "        case .%1; for despawning._%1 {\n            bucket_array_remove(*_%1, it);\n            array_reset(*despawning._%1);\n        }\n", it);
+        print_to_builder(*cleanup, "    for _%1.despawning\n        bucket_array_remove(*_%1.storage, it);\n    array_reset(*_%1.despawning);\n", it);
+        print_to_builder(*cleanup_individual, "        case .%1; for _%1.despawning {\n            bucket_array_remove(*_%1.storage, it);\n            array_reset(*_%1.despawning);\n        }\n", it);
     }
 
     print("----------------------------------------\n");
@@ -88,15 +88,11 @@ XX,     entity_type_names.count
 
 Entity_Storage :: struct {
 %1
-    last_id: [%2] u32;
-    despawning: struct {
-%3    }
-    types: [%2] Type : .[ %4 ]; // not actually used for anything...
+    types: [%2] Type : .[ %3 ]; // not actually used for anything...
 }
 
 XX,     builder_to_string(*entity_storage),
         entity_type_names.count,
-        builder_to_string(*despawning),
         type_names
     );
 
@@ -112,14 +108,10 @@ XX,     type_names_for_enum
     add(#string XX
 
 reset_entity_storage :: () {
-    cleanup_despawning_entities();
-    using entity_storage;
-    for 0..NUM_ENTITY_TYPES-1 last_id[it] = 0;
 %1}
 
 reset_entity_storage :: (type: Entity_Types) {
     using entity_storage;
-    last_id[type] = 0;
     if type == {
 %2    }
 }

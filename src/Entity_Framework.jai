@@ -13,11 +13,26 @@ Entity_Base :: struct {
     loc: Bucket_Locator;
 }
 
+Entity_Substorage :: struct(type: Type, items_per_bucket: int) {
+    storage: Bucket_Array(type, items_per_bucket, true);
+    last_id: Entity_Id;
+    despawning: [..] Bucket_Locator;
+}
+
+for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: For_Flags) #expand {
+    #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
+
+    for `it, `it_index: storage {
+        if `it.despawning continue;
+        #insert body;
+    }
+}
+
 spawn :: (entity: $T/Entity_Base) -> Handle(T) {
-    #insert #run sprint("last_id := *entity_storage.last_id[Entity_Types.%];", T);
-    #insert #run sprint("storage := *entity_storage._%;", T);
-    locator := bucket_array_add(storage, entity);
-    pointer := bucket_array_find_pointer(storage, locator);
+    #insert #run sprint("substorage := *entity_storage._%;", T);
+    last_id := *substorage.last_id;
+    locator := bucket_array_add(*substorage.storage, entity);
+    pointer := bucket_array_find_pointer(*substorage.storage, locator);
     
     <<last_id += 1;
     pointer.id = <<last_id;
@@ -36,7 +51,7 @@ despawn :: (handle: Handle($T)) {
     if gone return;
     handle.ptr.id = 0;
     handle.ptr.despawning = true;
-    #insert #run sprint("despawning_array := *entity_storage.despawning._%;", T);
+    #insert #run sprint("despawning_array := *entity_storage._%.despawning;", T);
     array_add(despawning_array, handle.loc);
 }
 

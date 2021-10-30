@@ -11,11 +11,9 @@ Coin_Style :: enum {
 }
 
 simulate :: (using coin: *Coin, dt: float) {
-    if despawning return;
     print("Simulating Coin %\n", id);
 }
 
 present :: (using coin: *Coin) {
-    if despawning return;
     print("Presenting Coin %\n", id);
 }
