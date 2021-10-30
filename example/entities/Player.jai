@@ -4,10 +4,10 @@ Player :: struct @bucket_size=1 {
 
 simulate :: (using player: *Player, dt: float) {
     if despawning return;
-    print("Simulating Player %\n", gen);
+    print("Simulating Player %\n", id);
 }
 
 present :: (using player: *Player) {
     if despawning return;
-    print("Presenting Player %\n", gen);
+    print("Presenting Player %\n", id);
 }

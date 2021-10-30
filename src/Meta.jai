@@ -38,6 +38,8 @@ build_step :: inline (message: *Message) {
 #scope_file
 
 
+//TODO: make all of this generation 1000x better
+
 _entity_type_name: string;
 
 generated_code := false;
@@ -51,7 +53,6 @@ generate_code :: (w: Workspace) {
     type_names := join(..entity_type_names, ", ");
     type_names_for_enum := join(..entity_type_names, ";\n    ");
 
-    //TODO: make all of this generation 1000x better
     String_Prep :: struct { //TODO: better name
         str: string;
         builder: String_Builder;
@@ -97,10 +98,10 @@ NUM_ENTITY_TYPES :: %1;
 
 Entity_Storage :: struct {
 %3
-    gens: [%1] u32;
+    last_id: [%1] u32;
     despawning: struct {
 %7    }
-    types: [%1] Type : .[ %2 ];
+    types: [%1] Type : .[ %2 ]; // not actually used for anything...
 }
 
 Entity_Types :: enum {
@@ -110,13 +111,12 @@ Entity_Types :: enum {
 reset_entity_storage :: () {
     cleanup_despawning_entities();
     using entity_storage;
-    for 0..NUM_ENTITY_TYPES-1 gens[it] = 0;
-    //array_reset(*gens);
+    for 0..NUM_ENTITY_TYPES-1 last_id[it] = 0;
 %5}
 
 reset_entity_storage :: (type: Entity_Types) {
     using entity_storage;
-    gens[type] = 0;
+    last_id[type] = 0;
     if type == {
 %6    }
 }
@@ -150,8 +150,6 @@ DONE,
 }
 
 get_bucket_size :: (header: *Code_Struct) -> int {
-    DEFAULT_ITEMS_PER_BUCKET :: 32;
-    BUCKET_SIZE_NOTE :: "bucket_size=";
     for header.notes if begins_with(it.text, BUCKET_SIZE_NOTE) {
         items_per_bucket := slice(it.text, BUCKET_SIZE_NOTE.count, 8);
         return parse_int(*items_per_bucket);

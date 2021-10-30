@@ -1,40 +1,40 @@
-Gen :: #type u64;
+Entity_Id :: #type u64;
 
 Handle :: struct (T: Type) {
     #assert is_subclass_of(type_info(T), "Entity_Base");
     ptr: *T;
-    gen: Gen;
+    id: Entity_Id;
     loc: Bucket_Locator;
 }
 
 Entity_Base :: struct {
     despawning: bool;
-    gen: Gen;
+    id: Entity_Id;
     loc: Bucket_Locator;
 }
 
 spawn :: (entity: $T/Entity_Base) -> Handle(T) {
-    #insert #run sprint("gen := *entity_storage.gens[Entity_Types.%];", T);
+    #insert #run sprint("last_id := *entity_storage.last_id[Entity_Types.%];", T);
     #insert #run sprint("storage := *entity_storage._%;", T);
     locator := bucket_array_add(storage, entity);
     pointer := bucket_array_find_pointer(storage, locator);
     
-    <<gen += 1;
-    pointer.gen = <<gen;
+    <<last_id += 1;
+    pointer.id = <<last_id;
     pointer.loc = locator;
     pointer.despawning = false;
 
     handle: Handle(T);
     handle.ptr = pointer;
     handle.loc = locator;
-    handle.gen = pointer.gen;
+    handle.id = pointer.id;
     return handle;
 }
 
 despawn :: (handle: Handle($T)) {
     _, gone := get_from_handle(handle);
     if gone return;
-    handle.ptr.gen = 0;
+    handle.ptr.id = 0;
     handle.ptr.despawning = true;
     #insert #run sprint("despawning_array := *entity_storage.despawning._%;", T);
     array_add(despawning_array, handle.loc);
@@ -48,13 +48,13 @@ despawn :: inline (entity: *$T/Entity_Base) {
 get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
     handle: Handle(T);
     handle.ptr = entity;
-    handle.gen = entity.gen;
+    handle.id = entity.id;
     handle.loc = entity.loc;
     return handle;
 }
 
 get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #must {
-    if handle.ptr.despawning || handle.ptr.gen != handle.gen return gone = true;
+    if handle.ptr.despawning || handle.ptr.id != handle.id return gone = true;
     return handle.ptr;
 }
 
