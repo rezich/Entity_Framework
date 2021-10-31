@@ -57,7 +57,10 @@ despawn :: (handle: Handle($T)) {
 
 // pretty sure this is just going to be for despawning yourself?
 despawn :: inline (entity: *$T/Entity_Base) {
-    despawn(get_handle(entity)); //TODO: don't be lazy here
+    id = 0;
+    despawning = true;
+    #insert #run sprint("despawning_array := *entity_storage._%.despawning;", T);
+    array_add(despawning_array, handle.loc);
 }
 
 get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {

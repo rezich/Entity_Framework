@@ -1,7 +1,7 @@
 Entity_Framework
 ================
 
-this is a simple entity framework for your game.
+this is a simple entity framework for your video game or whatever.
 
 it does not contain:
 
@@ -18,9 +18,10 @@ what it is
 this entity framework allows you to derive your "entity" structs either from the
 included `Base_Entity` struct, or from an `Entity` struct you define yourself.
 an `Entity_Storage` struct will be automatically generated for all the entity
-structs in your code, containing a `Bucket_Array` for each one, with the same
-name as the struct but preceded by an underscore. the size of the buckets can be
-defined using a `@bucket_size=100` note on the entity struct declaration.
+structs in your code, containing an `Entity_Substorage` (which contains a
+`Bucket_Array`) for each one, with the same name as the struct but preceded by
+an underscore. the size of the buckets can be defined using a `@bucket_size=100`
+note on the entity struct declaration.
 
 a member of this `Entity_Storage` struct is declared, called `entity_storage`,
 and this lets you write code that iterates over all instances of a given entity
