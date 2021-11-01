@@ -1,6 +1,7 @@
 prebuild_step :: (w: Workspace, entity_type_name: string = "Entity", autoload: bool = true, autoload_directory: string = "entities") {
     _entity_type_name = entity_type_name;
     if autoload {
+        assert(file_exists(autoload_directory), sprint("Entity autoload directory % not found.", autoload_directory));
         entity_files := file_list(autoload_directory);
         for entity_files add_build_string(tprint("#load \"%\";", it), w);
     }
@@ -17,7 +18,7 @@ build_step :: inline (message: *Message) {
                 name := code_struct.defined_type.name;
                 if is_subclass_of(code_struct.defined_type, "Entity_Base") && name != _entity_type_name {
                     if array_add_if_unique(*entity_type_names, name) {
-                        print("Detected entity '%'.\n", name);
+                        print_verbose("Detected entity '%'.\n", name);
                         bucket_size := DEFAULT_ITEMS_PER_BUCKET;
                         for code_struct.notes if begins_with(it.text, BUCKET_SIZE_NOTE) {
                             items_per_bucket := slice(it.text, BUCKET_SIZE_NOTE.count, 8);
@@ -39,14 +40,19 @@ build_step :: inline (message: *Message) {
     }
 }
 
+reset :: () {
+    _entity_type_name = "";
+    generated_code = false;
+    array_reset(*entity_type_names);
+    table_reset(*entity_items_per_bucket);
+}
+
 
 #scope_file
 
 
 _entity_type_name: string;
-
 generated_code := false;
-
 entity_type_names: [..] string;
 entity_items_per_bucket: Table(string, int);
 
@@ -94,7 +100,7 @@ XX      );
     }
 
 
-    print("--begin codegen-------------------------\n");
+    print_verbose("--begin codegen-------------------------\n");
     add(#string XX
 
 NUM_ENTITY_TYPES :: %1;
@@ -147,15 +153,16 @@ cleanup_despawning_entities :: (type: Entity_Types) {
 }
 
 #import "Bucket_Array";
+#import "Basic";
 
 XX,     output(*cleanup),
         output(*cleanup_individual)
     );
-    print("--end codegen---------------------------\n");
+    print_verbose("--end codegen---------------------------\n");
 
     add :: (data: string, args: .. Any) #expand {
         temp := sprint(data, ..args);
-        print(temp);
+        print_verbose(temp);
         add_build_string(temp, `w);
     }
     prepare :: (builder : *String_Builder, format_string : string, args: .. Any) #expand {
@@ -164,6 +171,12 @@ XX,     output(*cleanup),
     output :: (builder: *String_Builder) -> string {
         built := builder_to_string(builder);
         return slice(built, 0, built.count-1);
+    }
+}
+
+print_verbose :: (data: string, args: ..Any) {
+    #if VERBOSE {
+        print(data, ..args);
     }
 }
 
