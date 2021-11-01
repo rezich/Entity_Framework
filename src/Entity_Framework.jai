@@ -76,6 +76,11 @@ get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #mus
     return handle.ptr;
 }
 
+operator == :: (a: Handle($T), b: Handle(T)) -> bool {
+    // we probably don't need to compare the two Bucket_Locators?
+    return a.ptr == b.ptr && a.id == b.id;
+}
+
 bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locator) -> *array.type {
     bucket := all_buckets[locator.bucket_index];
     assert(bucket.occupied[locator.slot_index] == true);
