@@ -26,7 +26,6 @@
             Entity_Framework.build_step(message);
         }
         compiler_end_intercept(w);
-        Entity_Framework.reset();
         test_number += 1;
     }
     print(HORIZONTAL_RULE);

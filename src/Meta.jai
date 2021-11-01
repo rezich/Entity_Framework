@@ -1,4 +1,7 @@
 prebuild_step :: (w: Workspace, entity_type_name: string = "Entity", autoload: bool = true, autoload_directory: string = "entities") {
+    generated_code = false;
+    array_reset(*entity_type_names);
+    table_reset(*entity_items_per_bucket);
     _entity_type_name = entity_type_name;
     if autoload {
         assert(file_exists(autoload_directory), sprint("Entity autoload directory % not found.", autoload_directory));
@@ -38,13 +41,6 @@ build_step :: inline (message: *Message) {
                 }
             }
     }
-}
-
-reset :: () {
-    _entity_type_name = "";
-    generated_code = false;
-    array_reset(*entity_type_names);
-    table_reset(*entity_items_per_bucket);
 }
 
 
