@@ -12,7 +12,7 @@
     add_build_file("main.jai", w);
 
     // this procedure needs to be called here, before the message loop:
-    Entity_Framework.prebuild_step(w);
+    Entity_Storage.prebuild_step(w);
 
     // here we're using it without additonal parameters, which is what you want
     // to do for the most straightforward, common use case of, say, a video game
@@ -43,7 +43,7 @@
         message := compiler_wait_for_message();
         if !message || message.kind == .COMPLETE break;
         // this procedure needs to be called here, in the message loop:
-        Entity_Framework.build_step(message);
+        Entity_Storage.build_step(message);
     }
 
     compiler_end_intercept(w);
@@ -54,4 +54,4 @@
 #import "Compiler";
 // this line needs (BUILDING=true) to import the build code instead of the main
 // application code:
-Entity_Framework :: #import "Entity_Framework"(BUILDING=true);
+Entity_Storage :: #import "Entity_Storage"(BUILDING=true);

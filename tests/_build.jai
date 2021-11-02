@@ -20,7 +20,7 @@
         add_build_file(it, w);
 
         autoload := !contains(it, "noautoload");
-        Entity_Framework.prebuild_step(w, autoload=autoload);
+        Entity_Storage.prebuild_step(w, autoload=autoload);
 
         failed := false;
         while true {
@@ -32,7 +32,7 @@
                 break;
             }
             if message.kind == .ERROR { failed = true; break; }
-            Entity_Framework.build_step(message);
+            Entity_Storage.build_step(message);
         }
         compiler_end_intercept(w);
         if failed {
@@ -75,4 +75,4 @@ FAILED :: "                 FAILED                 ";
 #import "File_Utilities";
 #import "Print_Color";
 #import "Process";
-Entity_Framework :: #import "Entity_Framework"(BUILDING=true);
+Entity_Storage :: #import "Entity_Storage"(BUILDING=true);

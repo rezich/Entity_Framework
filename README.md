@@ -1,7 +1,7 @@
-Entity_Framework
-================
+Entity_Storage
+==============
 
-this is a simple entity framework for your video game or whatever.
+this is a simple entity storage system for your video game or whatever.
 
 it does not contain:
 
@@ -9,7 +9,7 @@ it does not contain:
  - any sort of hierarchical/relational system
  - any kind of serialization/deserialization system
 
-however, it would be trivial to build any of that on top of this framework.
+however, it would be trivial to build any of that on top of this system.
 
 
 what it is
