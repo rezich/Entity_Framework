@@ -24,7 +24,7 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
 
     for `it, `it_index: storage {
         if `it.despawning continue;
-        #insert body;
+        #insert (remove={despawn(`it);}) body;
     }
 }
 
@@ -38,7 +38,7 @@ for_expansion :: (using collection: *$T/Entity_Collection, body: Code, flags: Fo
 
     for `it, `it_index: entities {
         if `it.despawning continue;
-        #insert body;
+        #insert (remove={despawn(`it);}) body;
     }
 }
 
@@ -63,13 +63,9 @@ spawn :: (entity: $T/Entity_Base) -> Handle(T) {
 despawn :: (handle: Handle($T)) {
     _, gone := from_handle(handle);
     if gone return;
-    handle.ptr.id = 0;
-    handle.ptr.despawning = true;
-    #insert #run sprint("despawning_array := *context.entity_storage._%.despawning;", T);
-    array_add(despawning_array, handle.loc);
+    despawn(handle.ptr);
 }
 
-// pretty sure this is just going to be for despawning yourself?
 despawn :: (using entity: *$T/Entity_Base) {
     id = 0;
     despawning = true;
@@ -91,7 +87,6 @@ from_handle :: (using handle: Handle($T)) -> entity: *T = null, gone := false #m
 }
 
 null_handle :: inline ($T: Type) -> Handle(T) {
-    #assert is_subclass_of(type_info(T), "Entity_Base");
     handle: Handle(T);
     return handle;
 }
@@ -101,27 +96,18 @@ operator == :: (a: Handle($T), b: Handle(T)) -> bool {
     return a.ptr == b.ptr && a.id == b.id;
 }
 
-bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locator) -> *array.type {
-    bucket := all_buckets[locator.bucket_index];
-    assert(bucket.occupied[locator.slot_index] == true);
-    result := *bucket.data[locator.slot_index];
-    return result;
-}
-
-/*each :: inline ($T: Type) -> *Bucket_Array(T, 20 /*or GLOBAL_BUCKET_SIZE (or...) */, true) {
-    // this would work, but only if every Entity's Bucket_Array had the same
-    // items_per_bucket. Or, sure, we could move this to the metaprogram and
-    // have it fill that out for us, or something... but, in the end, after
-    // playing around with things, the way we do things now makes more sense,
-    // plus ends up being more consise as well, as an added bonus.
-    #insert #run sprint("return *context.entity_storage._%;", T);
-}*/
-
 each :: ($T: Type, where: (*T) -> bool) -> Entity_Collection(T) {
     collection: Entity_Collection(T);
     #insert #run sprint("substorage := *context.entity_storage._%;", T);
     for substorage if where(it) array_add(*collection.entities, it);
     return collection;
+}
+
+bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locator) -> *array.type {
+    bucket := all_buckets[locator.bucket_index];
+    assert(bucket.occupied[locator.slot_index] == true);
+    result := *bucket.data[locator.slot_index];
+    return result;
 }
 
 #placeholder NUM_ENTITY_TYPES;

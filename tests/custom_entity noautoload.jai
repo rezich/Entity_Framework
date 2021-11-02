@@ -18,6 +18,7 @@ Enemy :: struct {
     info := type_info(type_of(context.entity_storage));
     members: [..] string;
     for info.members array_add(*members, it.name);
+    assert(members.count == 3); // +1 for `types`
     assert(array_find(members, "_Player"));
     assert(array_find(members, "_Enemy"));
     assert(!array_find(members, "_Entity"));
