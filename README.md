@@ -3,7 +3,7 @@ Entity_Storage
 
 this is a simple entity storage system for your video game or whatever.
 
-it does not contain:
+it does ***not*** contain:
 
  - a component system
  - any sort of hierarchical/relational system
@@ -28,9 +28,37 @@ an instance of this `Entity_Storage` struct is added to the context as
 instances of a given entity type very easily:
 
 ```
+Physics_Object :: struct {
+    using base: Base_Entity;
+    mass: float;
+    // ...
+}
+
+simulate :: (using physics_object: *Physics_Object, dt: float) {
+    // ...
+}
+
 using context.entity_storage;
 for _Physics_Object simulate(it, dt);
 ```
+
+sometimes you don't want to iterate over *all* instances of a given entity type,
+but only a subset that meets some criteria. you can do this too (but it's
+slower):
+
+```
+too_heavy_for_me :: (using physics_object: *Physics_Object) -> bool {
+    return mass > 50;
+}
+
+for each(Physics_Object, where=too_heavy_for_me) {
+    // ...
+}
+```
+
+`each()` returns an `Entity_Collection(T)` struct that's just a wrapper around
+`[..] *T` with a `for_expansion` defined for it.
+
 
 ### `Handle`s instead of pointers
 
@@ -48,12 +76,12 @@ with a `gone` boolean that's true if the entity has been despawned (deactivated
 or cleaned up), or if the entity that's now in that pointer has a different
 `id`. basically, if the entity is *`gone`*.
 
-long story short, you want to use `Handle(T)`s to remember entities (which is
-what `spawn()` returns, anyway) across frame boudaries and procedure calls,
-unless you know what you're doing (i.e. passing a pointer to procedure calls
-that you are 100% sure will not despawn the entity). then when you're actually
-using the entity pointer to do some stuff with it, you use `from_handle()`, and
-the compiler reminds you to check to see if it's `gone` since you last checked.
+long story short, you want to use `Handle(T)`s (which is what `spawn()` returns,
+anyway) to remember entities across frame boudaries and procedure calls, unless
+you know what you're doing (i.e. passing a pointer to procedure calls that you
+are 100% sure will not despawn the entity). then when you're actually using the
+entity pointer to do some stuff with it, you use `from_handle()`, and the
+compiler reminds you to check to see if it's `gone` since you last checked.
 
 
 documentation
