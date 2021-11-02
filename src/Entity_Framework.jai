@@ -100,8 +100,10 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
 #placeholder NUM_ENTITY_TYPES;
 #placeholder Entity_Types;
 #placeholder Entity_Storage;
-#placeholder reset_entity_storage;        // unnecessary?
-#placeholder cleanup_despawning_entities; // unnecessary?
+// these two lines crash when compiling... anything but the tests?
+//#placeholder reset_entity_storage;        //COMPILERCRASH
+//#placeholder cleanup_despawning_entities; //COMPILERCRASH
+// thankfully, we don't actually need them...
 
 #add_context entity_storage: Entity_Storage;
 
