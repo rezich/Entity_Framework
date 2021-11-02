@@ -28,6 +28,20 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
     }
 }
 
+Entity_Collection :: struct(type: Type) {
+    #assert is_subclass_of(type_info(type), "Entity_Base");
+    entities: [..] *type;
+}
+
+for_expansion :: (using collection: *$T/Entity_Collection, body: Code, flags: For_Flags) #expand {
+    #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
+
+    for `it, `it_index: entities {
+        if `it.despawning continue;
+        #insert body;
+    }
+}
+
 spawn :: (entity: $T/Entity_Base) -> Handle(T) {
     #insert #run sprint("substorage := *context.entity_storage._%;", T);
     last_id := *substorage.last_id;
@@ -102,6 +116,13 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
     // plus ends up being more consise as well, as an added bonus.
     #insert #run sprint("return *context.entity_storage._%;", T);
 }*/
+
+each :: ($T: Type, where: (*T) -> bool) -> Entity_Collection(T) {
+    collection: Entity_Collection(T);
+    #insert #run sprint("substorage := *context.entity_storage._%;", T);
+    for substorage if where(it) array_add(*collection.entities, it);
+    return collection;
+}
 
 #placeholder NUM_ENTITY_TYPES;
 #placeholder Entity_Types;

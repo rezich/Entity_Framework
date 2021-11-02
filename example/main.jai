@@ -81,6 +81,8 @@ present :: () {
 // reset_entity_storage(.Block);
 // null_handle(Block); // returns an "empty" or null Handle(Block)
 //
+// for each(Block, where=some_condition_function)
+//
 // Entity_Types is an enum of all of the Entity-derived types that you can use
 // for whatever you want.
 
