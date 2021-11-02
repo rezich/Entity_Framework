@@ -76,6 +76,12 @@ from_handle :: (using handle: Handle($T)) -> entity: *T = null, gone := false #m
     return ptr;
 }
 
+null_handle :: inline ($T: Type) -> Handle(T) {
+    #assert is_subclass_of(type_info(T), "Entity_Base");
+    handle: Handle(T);
+    return handle;
+}
+
 operator == :: (a: Handle($T), b: Handle(T)) -> bool {
     // we probably don't need to compare the two Bucket_Locators?
     return a.ptr == b.ptr && a.id == b.id;

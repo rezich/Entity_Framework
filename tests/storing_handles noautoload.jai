@@ -71,6 +71,20 @@ Enemy :: struct {
         for _Enemy array_add(*enemy_healths, it.health);
         assert(enemy_healths[1] == 25);
     }
+    // something happened to make the player lose the target
+    {
+        p, player_gone := from_handle(player);
+        assert(!player_gone);
+        p.target = null_handle(Enemy);
+        t, target_gone := from_handle(p.target);
+        assert(target_gone);
+        assert(p.target == null_handle(Enemy));
+    }
+    // game loop iteration
+    {
+        using context.entity_storage;
+        for _Player simulate(it);
+    }
     // ensure player still has a target, damage it again
     {
         p, player_gone := from_handle(player);
@@ -92,6 +106,14 @@ Enemy :: struct {
     {
         using context.entity_storage;
         assert(_Enemy.storage.count == 1);
+    }
+    // ensure player no longer has a target
+    {
+        p, player_gone := from_handle(player);
+        assert(!player_gone);
+        _, target_gone := from_handle(p.target);
+        assert(target_gone);
+        p.target = null_handle(Enemy);
     }
 }
 

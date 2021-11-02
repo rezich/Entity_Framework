@@ -79,6 +79,7 @@ present :: () {
 // cleanup_despawning_entities(.Block);
 // reset_entity_storage();
 // reset_entity_storage(.Block);
+// null_handle(Block); // returns an "empty" or null Handle(Block)
 //
 // Entity_Types is an enum of all of the Entity-derived types that you can use
 // for whatever you want.
