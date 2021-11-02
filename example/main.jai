@@ -59,7 +59,7 @@ main :: () {
 
 simulate :: (dt: float) {
     // here's how you iterate through all entities of a given type:
-    using entity_storage;
+    using context.entity_storage;
     for _Player simulate(it, dt);
     for _Block  simulate(it, dt);
     for _Coin   simulate(it, dt);
@@ -67,7 +67,7 @@ simulate :: (dt: float) {
 
 present :: () {
     // you can easily do stuff in any order you want in different iterations:
-    using entity_storage;
+    using context.entity_storage;
     for _Block  present(it);
     for _Coin   present(it);
     for _Player present(it);

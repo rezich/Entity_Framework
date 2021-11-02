@@ -1,5 +1,5 @@
 #run {
-    using entity_storage;
+    using context.entity_storage;
     
     {c: Coin; spawn(c);}
     assert(_Coin.storage.count == 1);

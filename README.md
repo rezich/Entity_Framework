@@ -23,12 +23,12 @@ structs in your code, containing an `Entity_Substorage` (which contains a
 an underscore. the size of the buckets can be defined using a `@bucket_size=100`
 note on the entity struct declaration.
 
-a member of this `Entity_Storage` struct is declared, called `entity_storage`,
-and this lets you write code that iterates over all instances of a given entity
-type very easily:
+an instance of this `Entity_Storage` struct is added to the context as
+`context.entity_storage`, and this lets you write code that iterates over all
+instances of a given entity type very easily:
 
 ```
-using entity_storage;
+using context.entity_storage;
 for _Physics_Object simulate(it, dt);
 ```
 

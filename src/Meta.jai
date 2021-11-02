@@ -125,7 +125,7 @@ reset_entity_storage :: () {
 }
 
 reset_entity_storage :: (type: Entity_Types) {
-    using entity_storage;
+    using context.entity_storage;
     if type == {
 %2
     }
@@ -137,12 +137,12 @@ XX,     output(*reset_entity_storage),
     add(#string XX
 
 cleanup_despawning_entities :: () {
-    using entity_storage;
+    using context.entity_storage;
 %1
 }
 
 cleanup_despawning_entities :: (type: Entity_Types) {
-    using entity_storage;
+    using context.entity_storage;
     if type == {
 %2
     }

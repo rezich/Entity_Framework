@@ -29,7 +29,7 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
 }
 
 spawn :: (entity: $T/Entity_Base) -> Handle(T) {
-    #insert #run sprint("substorage := *entity_storage._%;", T);
+    #insert #run sprint("substorage := *context.entity_storage._%;", T);
     last_id := *substorage.last_id;
     locator := bucket_array_add(*substorage.storage, entity);
     pointer := bucket_array_find_pointer(*substorage.storage, locator);
@@ -51,7 +51,7 @@ despawn :: (handle: Handle($T)) {
     if gone return;
     handle.ptr.id = 0;
     handle.ptr.despawning = true;
-    #insert #run sprint("despawning_array := *entity_storage._%.despawning;", T);
+    #insert #run sprint("despawning_array := *context.entity_storage._%.despawning;", T);
     array_add(despawning_array, handle.loc);
 }
 
@@ -59,7 +59,7 @@ despawn :: (handle: Handle($T)) {
 despawn :: inline (entity: *$T/Entity_Base) {
     id = 0;
     despawning = true;
-    #insert #run sprint("despawning_array := *entity_storage._%.despawning;", T);
+    #insert #run sprint("despawning_array := *context.entity_storage._%.despawning;", T);
     array_add(despawning_array, handle.loc);
 }
 
@@ -94,14 +94,14 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
     // have it fill that out for us, or something... but, in the end, after
     // playing around with things, the way we do things now makes more sense,
     // plus ends up being more consise as well, as an added bonus.
-    #insert #run sprint("return *entity_storage._%;", T);
+    #insert #run sprint("return *context.entity_storage._%;", T);
 }*/
 
 #placeholder NUM_ENTITY_TYPES;
 #placeholder Entity_Types;
 #placeholder Entity_Storage;
 
-entity_storage: Entity_Storage;
+#add_context entity_storage: Entity_Storage;
 
 #import "Compiler";
 #import "Bucket_Array";
