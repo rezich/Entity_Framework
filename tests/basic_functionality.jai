@@ -20,7 +20,7 @@
     }
 
     {
-        ptr, gone := get_from_handle(coin);
+        ptr, gone := from_handle(coin);
         assert(!gone);
 
         ptr.value = 200;
@@ -29,7 +29,7 @@
         assert(coin == handle);
     }
     {
-        ptr, gone := get_from_handle(coin);
+        ptr, gone := from_handle(coin);
         assert(ptr.value == 200);
     }
 
@@ -53,7 +53,7 @@
     assert(_Block.storage.count == 3); // haven't cleanead up yet
 
     {
-        invalid_block, gone := get_from_handle(block2);
+        invalid_block, gone := from_handle(block2);
         assert(gone);
     }
 

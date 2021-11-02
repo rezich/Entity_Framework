@@ -47,7 +47,7 @@ spawn :: (entity: $T/Entity_Base) -> Handle(T) {
 }
 
 despawn :: (handle: Handle($T)) {
-    _, gone := get_from_handle(handle);
+    _, gone := from_handle(handle);
     if gone return;
     handle.ptr.id = 0;
     handle.ptr.despawning = true;
@@ -56,11 +56,11 @@ despawn :: (handle: Handle($T)) {
 }
 
 // pretty sure this is just going to be for despawning yourself?
-despawn :: inline (entity: *$T/Entity_Base) {
+despawn :: (using entity: *$T/Entity_Base) {
     id = 0;
     despawning = true;
     #insert #run sprint("despawning_array := *context.entity_storage._%.despawning;", T);
-    array_add(despawning_array, handle.loc);
+    array_add(despawning_array, loc);
 }
 
 get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
@@ -71,9 +71,9 @@ get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
     return handle;
 }
 
-get_from_handle :: (handle: Handle($T)) -> entity: *T = null, gone := false #must {
-    if handle.ptr.despawning || handle.ptr.id != handle.id return gone = true;
-    return handle.ptr;
+from_handle :: (using handle: Handle($T)) -> entity: *T = null, gone := false #must {
+    if id == 0 || ptr.despawning || ptr.id != id return gone = true;
+    return ptr;
 }
 
 operator == :: (a: Handle($T), b: Handle(T)) -> bool {

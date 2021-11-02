@@ -43,18 +43,17 @@ spawned in its place in memory since you last checked.
 for this reason, entities are assigned a unique `id` when they are spawned, and
 you can call `get_handle(ptr)` on an entity pointer to get a `Handle(T)` that
 contains both the entity pointer and the `id` of the entity. then, later, you
-can use `ent, gone := get_from_handle(hnd)` to get the entity pointer back,
-along with a `gone` boolean that's true if the entity has been despawned
-(deactivated or cleaned up), or if the entity that's now in that pointer has a
-different `id`. basically, if the entity is *`gone`*.
+can use `ent, gone := from_handle(hnd)` to get the entity pointer back, along
+with a `gone` boolean that's true if the entity has been despawned (deactivated
+or cleaned up), or if the entity that's now in that pointer has a different
+`id`. basically, if the entity is *`gone`*.
 
 long story short, you want to use `Handle(T)`s to remember entities (which is
 what `spawn()` returns, anyway) across frame boudaries and procedure calls,
 unless you know what you're doing (i.e. passing a pointer to procedure calls
 that you are 100% sure will not despawn the entity). then when you're actually
-using the entity pointer to do some stuff with it, you use `get_from_handle()`,
-and the compiler reminds you to check to see if it's `gone` since you last
-checked.
+using the entity pointer to do some stuff with it, you use `from_handle()`, and
+the compiler reminds you to check to see if it's `gone` since you last checked.
 
 
 documentation

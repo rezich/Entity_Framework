@@ -5,7 +5,7 @@
     for test_files {
         filename := path_filename(it);
         filename_without_extension := path_strip_extension(filename);
-        if !ends_with(it, ".jai") || filename == "build.jai" continue;
+        if !ends_with(it, ".jai") || filename == "_build.jai" continue;
         test_count += 1;
         workspace_name := sprint("Test #%: %", test_count, filename_without_extension);
         print_color("Test #%:", test_count, color=BACKGROUND_RED|BACKGROUND_GREEN|BACKGROUND_BLUE|FOREGROUND_INTENSITY);
@@ -63,6 +63,7 @@
         print("\n");
     }
     set_build_options_dc(.{do_output=false});
+    exit(0); // without this the compiler hangs when some errors are encountered
 }
 
 PASSED :: "                 PASSED                 ";
