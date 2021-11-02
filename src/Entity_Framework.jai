@@ -100,6 +100,8 @@ bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locato
 #placeholder NUM_ENTITY_TYPES;
 #placeholder Entity_Types;
 #placeholder Entity_Storage;
+#placeholder reset_entity_storage;        // unnecessary?
+#placeholder cleanup_despawning_entities; // unnecessary?
 
 #add_context entity_storage: Entity_Storage;
 
