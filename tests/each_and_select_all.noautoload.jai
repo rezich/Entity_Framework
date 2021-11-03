@@ -20,16 +20,9 @@ value_above_five :: (using coin: *Coin) -> bool {
 
     {
         total := 0;
-        //ALL_COINS_ABOVE_FIVE :: each(Coin, where=value_above_five);
-        for each(Coin, where=value_above_five) {
-            total += it.value;
-        }
-        assert(total == 195);
-    }
-
-    {
-        total := 0;
-        for collect(Coin, where=value_above_five) {
+        selection := select_all(Coin, where=value_above_five);
+        assert(selection.entities.count == 15);
+        for selection {
             total += it.value;
         }
         assert(total == 195);

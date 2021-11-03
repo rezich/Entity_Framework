@@ -33,12 +33,12 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
     }
 }
 
-Entity_Collection :: struct(type: Type) {
+Entity_Selection :: struct(type: Type) {
     #assert is_subclass_of(type_info(type), "Entity_Base");
     entities: [..] Handle(type);
 }
 
-for_expansion :: (using collection: *$T/Entity_Collection, body: Code, flags: For_Flags) #expand {
+for_expansion :: (using selection: *$T/Entity_Selection, body: Code, flags: For_Flags) #expand {
     #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
 
     for entity, `it_index: entities {
@@ -122,11 +122,11 @@ each :: ($T: Type, where: (*T) -> bool) -> Entity_Selector(T) {
     return iterator;
 }
 
-collect :: ($T: Type, where: (*T) -> bool) -> Entity_Collection(T) {
-    collection: Entity_Collection(T);
+select_all :: ($T: Type, where: (*T) -> bool) -> Entity_Selection(T) {
+    selection: Entity_Selection(T);
     #insert #run sprint("substorage := *context.entity_storage._%;", T);
-    for substorage if where(it) array_add(*collection.entities, get_handle(it));
-    return collection;
+    for substorage if where(it) array_add(*selection.entities, get_handle(it));
+    return selection;
 }
 
 bucket_array_find_pointer :: (using array: *Bucket_Array, locator: Bucket_Locator) -> *array.type {
