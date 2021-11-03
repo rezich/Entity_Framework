@@ -43,8 +43,7 @@ for _Physics_Object simulate(it, dt);
 ```
 
 sometimes you don't want to iterate over *all* instances of a given entity type,
-but only a subset that meets some criteria. you can do this too (but it's
-slower):
+but only a subset that meets some criteria. you can do this too:
 
 ```
 too_heavy_for_me :: (using physics_object: *Physics_Object) -> bool {
@@ -56,8 +55,9 @@ for each(Physics_Object, where=too_heavy_for_me) {
 }
 ```
 
-`each()` returns an `Entity_Collection(T)` struct that's just a wrapper around
-`[..] *T` with a `for_expansion` defined for it.
+`each()` returns an `Entity_Selector(T)` struct whose `for_expansion` iterates
+through all of that type of entity, runs the `where=` procedure on it, and if
+that returns true, then the code block is executed for that entity.
 
 
 ### `Handle`s instead of pointers

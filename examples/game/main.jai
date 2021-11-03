@@ -34,7 +34,6 @@ init_game :: () {
     {p: Player; p.position=xy(100, 100); game.player=spawn(p); }
 }
 
-
 main :: () {
     init_game();
 

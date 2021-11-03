@@ -7,6 +7,11 @@ Handle :: struct (T: Type) {
     loc: Bucket_Locator;
 }
 
+operator == :: (a: Handle($T), b: Handle(T)) -> bool {
+    // we probably don't need to compare the two Bucket_Locators?
+    return a.ptr == b.ptr && a.id == b.id;
+}
+
 Entity_Base :: struct {
     despawning: bool;
     id: Entity_Id;
@@ -24,21 +29,41 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
 
     for `it, `it_index: storage {
         if `it.despawning continue;
-        #insert (remove={despawn(`it);}) body;
+        #insert (remove={}) body;
     }
 }
 
 Entity_Collection :: struct(type: Type) {
     #assert is_subclass_of(type_info(type), "Entity_Base");
-    entities: [..] *type;
+    entities: [..] Handle(type);
 }
 
 for_expansion :: (using collection: *$T/Entity_Collection, body: Code, flags: For_Flags) #expand {
     #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
 
+    for entity, `it_index: entities {
+        `it, gone := from_handle(entity);
+        if gone {
+            array_unordered_remove_by_index(*entities, `it_index);
+            continue;
+        }
+        #insert (remove={array_ordered_remove_by_index(*entities, `it_index);}) body;
+    }
+}
+
+Entity_Selector :: struct(type: Type) {
+    #assert is_subclass_of(type_info(type), "Entity_Base");
+    condition: (*type) -> bool;
+}
+
+for_expansion :: (using iterator: *Entity_Selector($T), body: Code, flags: For_Flags) #expand {
+    #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
+
+    #insert #run sprint("entities := *context.entity_storage._%;", T);
+
     for `it, `it_index: entities {
-        if `it.despawning continue;
-        #insert (remove={despawn(`it);}) body;
+        if `it.despawning || !condition(`it) continue;
+        #insert (remove={}) body;
     }
 }
 
@@ -91,15 +116,16 @@ null_handle :: inline ($T: Type) -> Handle(T) {
     return handle;
 }
 
-operator == :: (a: Handle($T), b: Handle(T)) -> bool {
-    // we probably don't need to compare the two Bucket_Locators?
-    return a.ptr == b.ptr && a.id == b.id;
+each :: ($T: Type, where: (*T) -> bool) -> Entity_Selector(T) {
+    iterator: Entity_Selector(T);
+    iterator.condition = where;
+    return iterator;
 }
 
-each :: ($T: Type, where: (*T) -> bool) -> Entity_Collection(T) {
+collect :: ($T: Type, where: (*T) -> bool) -> Entity_Collection(T) {
     collection: Entity_Collection(T);
     #insert #run sprint("substorage := *context.entity_storage._%;", T);
-    for substorage if where(it) array_add(*collection.entities, it);
+    for substorage if where(it) array_add(*collection.entities, get_handle(it));
     return collection;
 }
 
