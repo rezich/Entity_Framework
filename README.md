@@ -55,7 +55,7 @@ for each(Physics_Object, where=can_be_picked_up) {
 }
 ```
 
-`each()` returns an `Entity_Selector(T)` struct whose `for_expansion` iterates
+`each()` returns an `Each_Entity(T)` struct whose `for_expansion` iterates
 through all of that type of entity, runs the `where=` procedure on it, and if
 that returns true, then the code block is executed for that entity.
 
@@ -77,7 +77,20 @@ each entity type. (this sort of thing *intentionally* isn't automatically
 generated for you, in order to give you full control over the order in which
 things are executed.)
 
-another useful tool is `select_all()`:
+if that's not enough, there's a *third* valid syntactic way to do the exact same
+thing:
+
+```
+EACH_PICKUPABLE_OBJECT :: Each_Entity(Physics_Object).{where=can_be_picked_up};
+
+for EACH_PICKUPABLE_OBJECT {
+    // ...
+}
+```
+
+I dunno, maybe that's useful for someone.
+
+speaking of useful, another useful tool is `select_all()`:
 
 ```
 pickupable_objects := select_all(Physics_Object, where=can_be_picked_up);
@@ -90,10 +103,11 @@ for pickupable_objects {
 this has the exact same syntax as `each()`, except `select_all()` returns an
 `Entity_Selection(T)` struct, which is a wrapper around an array of `Handle(T)`.
 we'll get to what `Handle`s are in a second, but the important thing to know
-about `select_all()` is that it is slower to iterate through than `each()` or
-`for context.entity_storage._Foo`, because of indirection. the tradeoff is the
-`Entity_Selection(T)` that `select_all()` returns is something that can safely
-persist across procedure calls and frames (more on this in the next section).
+about `select_all()` is that it is slower to iterate through than any of those
+three ways of doing the same thing above, because of indirection. the tradeoff
+is the `Entity_Selection(T)` that `select_all()` returns is something that can
+safely persist across procedure calls and frames (more on this in the next
+section).
 
 as an added bonus, every time you iterate over an `Entity_Selection(T)`, any
 entities in the selection that have since been despawned will be automatically

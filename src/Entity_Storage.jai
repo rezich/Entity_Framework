@@ -51,18 +51,18 @@ for_expansion :: (using selection: *$T/Entity_Selection, body: Code, flags: For_
     }
 }
 
-Entity_Selector :: struct(type: Type) {
+Each_Entity :: struct(type: Type) {
     #assert is_subclass_of(type_info(type), "Entity_Base");
-    condition: (*type) -> bool;
+    where: (*type) -> bool;
 }
 
-for_expansion :: (using iterator: *Entity_Selector($T), body: Code, flags: For_Flags) #expand {
+for_expansion :: (using iterator: *Each_Entity($T), body: Code, flags: For_Flags) #expand {
     #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
 
     #insert #run sprint("entities := *context.entity_storage._%;", T);
 
     for `it, `it_index: entities {
-        if `it.despawning || !condition(`it) continue;
+        if `it.despawning || (where && !where(`it)) continue;
         #insert (remove={}) body;
     }
 }
@@ -116,9 +116,9 @@ null_handle :: inline ($T: Type) -> Handle(T) {
     return handle;
 }
 
-each :: ($T: Type, where: (*T) -> bool) -> Entity_Selector(T) {
-    iterator: Entity_Selector(T);
-    iterator.condition = where;
+each :: ($T: Type, where: (*T) -> bool) -> Each_Entity(T) {
+    iterator: Each_Entity(T);
+    iterator.where = where;
     return iterator;
 }
 
