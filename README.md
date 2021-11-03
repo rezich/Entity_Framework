@@ -11,6 +11,9 @@ it does ***not*** contain:
 
 however, it would be trivial to build any of that on top of this system.
 
+***this README is currently kind of rambly and confusing. check out
+`examples/game` to see this module in action.***
+
 
 what it is / how it works
 -------------------------

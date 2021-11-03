@@ -28,7 +28,7 @@ for_expansion :: (using substorage: *$T/Entity_Substorage, body: Code, flags: Fo
     #assert(!(flags & .REVERSE)); // it would be nice to work around this in the future
 
     for `it, `it_index: storage {
-        if `it.despawning continue;
+        if it.despawning continue;
         #insert (remove={}) body;
     }
 }
@@ -44,10 +44,10 @@ for_expansion :: (using selection: *$T/Entity_Selection, body: Code, flags: For_
     for entity, `it_index: entities {
         `it, gone := from_handle(entity);
         if gone {
-            array_unordered_remove_by_index(*entities, `it_index);
+            array_unordered_remove_by_index(*entities, it_index);
             continue;
         }
-        #insert (remove={array_ordered_remove_by_index(*entities, `it_index);}) body;
+        #insert (remove={array_ordered_remove_by_index(*entities, it_index);}) body;
     }
 }
 
@@ -62,7 +62,7 @@ for_expansion :: (using iterator: *Each_Entity($T), body: Code, flags: For_Flags
     #insert #run sprint("entities := *context.entity_storage._%;", T);
 
     for `it, `it_index: entities {
-        if `it.despawning || (where && !where(`it)) continue;
+        if it.despawning || (where && !where(it)) continue;
         #insert (remove={}) body;
     }
 }
@@ -86,9 +86,9 @@ spawn :: (entity: $T/Entity_Base) -> Handle(T) {
 }
 
 despawn :: (handle: Handle($T)) {
-    _, gone := from_handle(handle);
+    ptr, gone := from_handle(handle);
     if gone return;
-    despawn(handle.ptr);
+    despawn(ptr);
 }
 
 despawn :: (using entity: *$T/Entity_Base) {
@@ -116,7 +116,7 @@ null_handle :: inline ($T: Type) -> Handle(T) {
     return handle;
 }
 
-each :: ($T: Type, where: (*T) -> bool) -> Each_Entity(T) {
+each :: ($T: Type, where: (*T) -> bool=null) -> Each_Entity(T) {
     iterator: Each_Entity(T);
     iterator.where = where;
     return iterator;

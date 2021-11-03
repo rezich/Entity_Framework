@@ -14,6 +14,14 @@ EACH_COIN_WORTH_TAKING :: Each_Entity(Coin).{where=value_above_five};
 
     {
         total := 0;
+        for each(Coin) {
+            total += it.value;
+        }
+        assert(total == 210);
+    }
+
+    {
+        total := 0;
         for each(Coin, where=value_above_five) {
             total += it.value;
         }
