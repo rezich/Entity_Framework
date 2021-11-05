@@ -56,117 +56,91 @@ generate_code :: (w: Workspace) {
     quick_sort(entity_type_names, compare_strings);
 
     type_names := join(..entity_type_names, ", ");
-    type_names_for_enum := join(..entity_type_names, ";\n    ");
-
-
-    entity_storage: String_Builder; defer free_buffers(*entity_storage);
-    reset_entity_storage: String_Builder; defer free_buffers(*reset_entity_storage);
-    reset_entity_storage_individual: String_Builder; defer free_buffers(*reset_entity_storage_individual);
-    despawning: String_Builder; defer free_buffers(*despawning);
-    cleanup: String_Builder; defer free_buffers(*cleanup);
-    cleanup_individual: String_Builder; defer free_buffers(*cleanup_individual);
-
-    for entity_type_names {
-        items_per_bucket, success := table_find(entity_items_per_bucket, it);
-        assert(success);
-        prepare(*entity_storage, #string XX
-    _%1: Entity_Substorage(%1, %2);
-XX      );
-        prepare(*reset_entity_storage, #string XX
-    inline reset_entity_storage(.%1);
-XX      );
-        prepare(*reset_entity_storage_individual, #string XX
-        case .%1;
-            inline cleanup_despawning_entities(.%1);
-            bucket_array_reset(*_%1.storage);
-            _%1.last_id = 0;
-XX      );
-        prepare(*despawning, #string XX
-        _%: [..] Bucket_Locator;
-XX      );
-        prepare(*cleanup, #string XX
-    for _%1.despawning bucket_array_remove(*_%1.storage, it);
-    array_reset(*_%1.despawning);
-XX      );
-        prepare(*cleanup_individual, #string XX
-        case .%1;
-            for _%1.despawning bucket_array_remove(*_%1.storage, it);
-            array_reset(*_%1.despawning);
-XX      );
-    }
-
+    type_names_for_enum := tprint("%;\n", join(..entity_type_names, ";\n    "));
 
     print_verbose("--begin codegen-------------------------\n");
-    add(#string XX
 
-NUM_ENTITY_TYPES :: %1;
+    add_to_build(w, tprint(#string XX
+
+NUM_ENTITY_TYPES :: %;
+
+XX, entity_type_names.count), #string XX
 
 Entity_Storage :: struct {
-%2
-    types: [NUM_ENTITY_TYPES] Type : .[ %3 ]; // not actually used for anything...
+XX, iterate(#string XX
+    _%1: Entity_Substorage(%1, %2);
+XX), tprint(#string XX
+    types: [NUM_ENTITY_TYPES] Type : .[ % ]; // not actually used for anything...
+XX, type_names), #string XX
 }
-
-XX,     entity_type_names.count,
-        output(*entity_storage),
-        type_names
-    );
-    add(#string XX
 
 Entity_Types :: enum {
-    %1;
+XX, type_names_for_enum, #string XX
 }
 
-XX,     type_names_for_enum
-    );
-    add(#string XX
-
 reset_entity_storage :: () {
-%1
+XX, iterate(#string XX
+    inline reset_entity_storage(.%1);
+XX), #string XX
 }
 
 reset_entity_storage :: (type: Entity_Types) {
     using context.entity_storage;
     if type == {
-%2
+XX, iterate(#string XX
+        case .%1;
+            inline cleanup_despawning_entities(.%1);
+            bucket_array_reset(*_%1.storage);
+            _%1.last_id = 0;
+XX), #string XX
     }
 }
 
-XX,     output(*reset_entity_storage),
-        output(*reset_entity_storage_individual)
-    );
-    add(#string XX
-
 cleanup_despawning_entities :: () {
     using context.entity_storage;
-%1
+XX, iterate(#string XX
+    for _%1.despawning bucket_array_remove(*_%1.storage, it);
+    array_reset(*_%1.despawning);
+XX), #string XX
 }
 
 cleanup_despawning_entities :: (type: Entity_Types) {
     using context.entity_storage;
     if type == {
-%2
+XX, iterate(#string XX
+        case .%1;
+            for _%1.despawning bucket_array_remove(*_%1.storage, it);
+            array_reset(*_%1.despawning);
+XX), #string XX
     }
 }
 
 #import "Bucket_Array";
 #import "Basic";
 
-XX,     output(*cleanup),
-        output(*cleanup_individual)
+XX
     );
     print_verbose("--end codegen---------------------------\n");
 
-    add :: (data: string, args: .. Any) #expand {
-        temp := sprint(data, ..args);
-        print_verbose(temp);
-        add_build_string(temp, `w);
+    iterate :: (str: string) -> string #expand {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+        for `entity_type_names {
+            items_per_bucket, success := table_find(entity_items_per_bucket, it);
+            assert(success);
+            print_to_builder(*builder, str, it, items_per_bucket);
+        }
+        return builder_to_string(*builder);
     }
-    prepare :: (builder : *String_Builder, format_string : string, args: .. Any) #expand {
-        print_to_builder(builder, format_string, `it, `items_per_bucket);
-    }
-    output :: (builder: *String_Builder) -> string {
-        built := builder_to_string(builder);
-        return slice(built, 0, built.count-1);
+
+    add_to_build :: (w: Workspace, args: ..Any) {
+        builder: String_Builder;
+        defer free_buffers(*builder);
+        for args {
+            print_verbose("%", it);
+            print_to_builder(*builder, tprint("%", it));
+        }
+        add_build_string(builder_to_string(*builder), w);
     }
 }
 
