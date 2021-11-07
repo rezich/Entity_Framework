@@ -93,7 +93,7 @@ XX, iterate(#string XX
             bucket_array_reset(*_%1.storage);
             _%1.last_id = 0;
 XX), #string XX
-    }
+    } 
 }
 
 cleanup_despawning_entities :: () {

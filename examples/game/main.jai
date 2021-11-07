@@ -6,18 +6,25 @@ TARGET_FPS :: 60;
 
 C_BACKGROUND  : Vector4 : .{0.6875,0.765625,0.8671875,1};
 
-
+app: struct {
+    window: Window_Creation.Window_Type;
+}
 
 game: struct {
-    window: Window_Creation.Window_Type;
+    player: Handle(Player);
+    score: int;
+}
+
+assets: struct {
+    font: *Simp.Dynamic_Font;
+}
+
+time: struct {
     last_time: float64;
     elapsed_time: float64;
     fps := 0;
     fps_time := 0.0;
     fps_string: string;
-    player: Handle(Player);
-    font: *Simp.Dynamic_Font;
-    score: int;
 }
 
 init_game :: () {
@@ -25,22 +32,22 @@ init_game :: () {
     #if OS == .WINDOWS {
         Windows :: #import "Windows";
         using Windows;
-        x = GetSystemMetrics(SM_CXSCREEN) / 2 - WINDOW_WIDTH / 2;
-        y = GetSystemMetrics(SM_CYSCREEN) / 2 - WINDOW_HEIGHT / 2;
-        game.window = Window_Creation.create_window(window_name=WINDOW_TITLE, width=WINDOW_WIDTH, height=WINDOW_HEIGHT, window_x=x, window_y=y);
+        x = GetSystemMetrics(SM_CXSCREEN)/2 - WINDOW_WIDTH/2;
+        y = GetSystemMetrics(SM_CYSCREEN)/2 - WINDOW_HEIGHT/2;
     }
-    Simp.simp_init(game.window, WINDOW_WIDTH, WINDOW_HEIGHT, xx WINDOW_WIDTH, xx WINDOW_HEIGHT);
+    app.window = Window_Creation.create_window(window_name=WINDOW_TITLE, width=WINDOW_WIDTH, height=WINDOW_HEIGHT, window_x=x, window_y=y);
+    Simp.simp_init(app.window, WINDOW_WIDTH, WINDOW_HEIGHT, xx WINDOW_WIDTH, xx WINDOW_HEIGHT);
     set_working_directory(String.path_strip_filename(System.get_path_of_running_executable()));
-    game.font = Simp.get_font_at_size("./", "type_writer.ttf", 8);
+    assets.font = Simp.get_font_at_size("./", "type_writer.ttf", 8);
     reset_game();
 }
 
 reset_game :: () {
     reset_entity_storage();
     random_seed(xx get_time());
-    game.score = 0;
+    game = .{};
 
-    {p: Player; p.position=xy(100,100); game.player=spawn(p); }
+    {p: Player; p.position=xy(100,100); game.player=spawn(p);}
 
     {b: Block; b.position=xy(200,200); spawn(b);}
     {b: Block; b.position=xy(250,210); spawn(b);}
@@ -52,31 +59,26 @@ main :: () {
     init_game();
 
     quitting := false;
-    while (!quitting) {
-        if do_frame() == {
-            case .RESET;
-                reset_game();
-            case .QUIT;
-                quitting = true;
-        }
+    while !quitting if do_frame() == {
+        case .RESET; reset_game();
+        case .QUIT; quitting = true;
     }
 
     do_frame :: () -> Frame_Result {
         reset_temporary_storage();
-
+        using time;
         dt: float;
         now := get_time();
-        if game.last_time then dt = cast(float) (now - game.last_time);
-        game.last_time = now;
-
-        game.elapsed_time += dt;
-        game.fps_time += dt;
+        if last_time then dt = cast(float) (now - last_time);
+        last_time = now;
+        elapsed_time += dt;
+        fps_time += dt;
 
         TICK_PERIOD : float64 : 1.0 / xx TARGET_FPS;
         need_to_render := false;
 
-        while game.elapsed_time >= TICK_PERIOD {
-            game.elapsed_time -= TICK_PERIOD;
+        while elapsed_time >= TICK_PERIOD {
+            elapsed_time -= TICK_PERIOD;
             need_to_render = true;
             update_window_events();
             for events_this_frame if it.type == {
@@ -90,18 +92,19 @@ main :: () {
             cleanup_despawning_entities();
         }
 
-        if game.fps_time >= 1.0 {
-            free(game.fps_string);
-            game.fps_string = sprint("FPS:  %", game.fps);
-            game.fps_time -= 1.0;
-            game.fps = 0;
+        if fps_time >= 1.0 {
+            free(fps_string);
+            fps_string = sprint("FPS:  %", fps);
+            fps_time -= 1.0;
+            fps = 0;
         }
 
         if need_to_render {
-            game.fps += 1;
+            fps += 1;
             present();
-            Simp.swap_buffers(game.window);
+            Simp.swap_buffers(app.window);
         }
+
         return .CONTINUE;
     }
 
@@ -121,7 +124,7 @@ simulate :: (dt: float) {
 }
 
 present :: () {
-    Simp.update_window(game.window, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    Simp.update_window(app.window, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
     Simp.clear_render_target(C_BACKGROUND.x, C_BACKGROUND.y, C_BACKGROUND.z, C_BACKGROUND.w);
 
     using context.entity_storage;
@@ -130,7 +133,7 @@ present :: () {
     for _Bullet present(it);
     for _Player present(it);
 
-    draw_text_outlined(4, 4, game.fps_string);
+    draw_text_outlined(4, 4, time.fps_string);
     draw_text_outlined(4, 20, tprint("Bullets:  %", _Bullet.storage.count));
     draw_text_outlined(4, 36, tprint("Score:  %", game.score));
 }
@@ -150,11 +153,8 @@ simulate_entity :: (using entity: *$T/Entity, dt: float) {
 
 draw_text_outlined :: (x: s64, y: s64, text: string, color := Vector4.{1,1,1,1}, background := Vector4.{0,0,0,1}, effect_flags: Simp.Font_Effects = 0) {
     OFFSETS :: s64.[-1, -1, -1, 0, 1, 1, 1, 0];
-    for OFFSETS {
-        it_y := OFFSETS[(it_index + 2) % OFFSETS.count];
-        Simp.draw_text(game.font, x+it, y+it_y, text, background, effect_flags);
-    }
-    Simp.draw_text(game.font, x, y, text, color, effect_flags);
+    for OFFSETS Simp.draw_text(assets.font, x+it, y+OFFSETS[(it_index + 2) % OFFSETS.count], text, background, effect_flags);
+    Simp.draw_text(assets.font, x, y, text, color, effect_flags);
 }
 
 #import "Basic";
