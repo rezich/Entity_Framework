@@ -36,7 +36,7 @@ init_game :: () {
         y = GetSystemMetrics(SM_CYSCREEN)/2 - WINDOW_HEIGHT/2;
     }
     app.window = Window_Creation.create_window(window_name=WINDOW_TITLE, width=WINDOW_WIDTH, height=WINDOW_HEIGHT, window_x=x, window_y=y);
-    Simp.simp_init(app.window, WINDOW_WIDTH, WINDOW_HEIGHT, xx WINDOW_WIDTH, xx WINDOW_HEIGHT);
+    Simp.set_render_target(app.window);
     set_working_directory(String.path_strip_filename(System.get_path_of_running_executable()));
     assets.font = Simp.get_font_at_size("./", "type_writer.ttf", 8);
     reset_game();
@@ -124,7 +124,7 @@ simulate :: (dt: float) {
 }
 
 present :: () {
-    Simp.update_window(app.window, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    Simp.update_window(app.window);
     Simp.clear_render_target(C_BACKGROUND.x, C_BACKGROUND.y, C_BACKGROUND.z, C_BACKGROUND.w);
 
     using context.entity_storage;
