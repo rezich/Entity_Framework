@@ -1,7 +1,7 @@
 Entity_Id :: #type u64;
 
 Handle :: struct (T: Type) {
-    #assert is_subclass_of(type_info(T), "Entity_Base");
+    //#assert is_subclass_of(type_info(T), "Entity_Base");
     ptr: *T;
     id: Entity_Id;
     loc: Bucket_Locator;
@@ -109,11 +109,6 @@ get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
 from_handle :: (using handle: Handle($T)) -> entity: *T = null, gone := false #must {
     if id == 0 || ptr.despawning || ptr.id != id return gone = true;
     return ptr;
-}
-
-null_handle :: inline ($T: Type) -> Handle(T) {
-    handle: Handle(T);
-    return handle;
 }
 
 each :: ($T: Type, where: (*T) -> bool=null) -> Each_Entity(T) {

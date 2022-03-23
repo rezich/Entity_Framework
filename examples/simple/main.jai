@@ -79,7 +79,7 @@ present :: () {
 // cleanup_despawning_entities(.Block);
 // reset_entity_storage();
 // reset_entity_storage(.Block);
-// null_handle(Block); // returns an "empty" or null Handle(Block)
+// Handle(Block).{}; // returns an "empty" or null Handle(Block)
 //
 // for each(Block, where=some_condition_function)
 //

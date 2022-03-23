@@ -20,6 +20,7 @@ build_step :: inline (message: *Message) {
                 code_struct := it.expression;
                 name := code_struct.defined_type.name;
                 if is_subclass_of(code_struct.defined_type, "Entity_Base") && name != _entity_type_name {
+                    print_verbose("Detected entity hopefully? '%'\n", name);
                     if array_add_if_unique(*entity_type_names, name) {
                         print_verbose("Detected entity '%'.\n", name);
                         bucket_size := DEFAULT_ITEMS_PER_BUCKET;

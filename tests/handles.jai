@@ -21,6 +21,8 @@ damage :: (using enemy: *Enemy, amount: int) {
 Enemy :: struct {
     using base: Entity;
     health: int = 50;
+    target: Handle(Entity);
+    bff: Handle(Enemy);
 }
 
 #run {
@@ -75,10 +77,10 @@ Enemy :: struct {
     {
         p, player_gone := from_handle(player);
         assert(!player_gone);
-        p.target = null_handle(Enemy);
+        p.target = Handle(Enemy).{};
         t, target_gone := from_handle(p.target);
         assert(target_gone);
-        assert(p.target == null_handle(Enemy));
+        assert(p.target == Handle(Enemy).{});
     }
     // game loop iteration
     {
@@ -113,7 +115,7 @@ Enemy :: struct {
         assert(!player_gone);
         _, target_gone := from_handle(p.target);
         assert(target_gone);
-        p.target = null_handle(Enemy);
+        p.target = Handle(Enemy).{};
     }
 }
 
