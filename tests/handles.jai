@@ -1,10 +1,10 @@
 Entity :: struct {
-    using entity_base: Entity_Base;
+    using #as entity_base: Entity_Base;
     position: Vector2;
 }
 
 Player :: struct {
-    using base: Entity;
+    using #as base: Entity;
     health: int = 100;
     target: Handle(Enemy);
 }
@@ -19,7 +19,7 @@ damage :: (using enemy: *Enemy, amount: int) {
 }
 
 Enemy :: struct {
-    using base: Entity;
+    using #as base: Entity;
     health: int = 50;
     target: Handle(Entity);
     bff: Handle(Enemy);

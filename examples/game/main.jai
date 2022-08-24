@@ -44,7 +44,7 @@ init_game :: () {
 
 reset_game :: () {
     reset_entity_storage();
-    random_seed(xx get_time());
+    random_seed(current_time_monotonic().low);
     game = .{};
 
     {p: Player; p.position=xy(100,100); game.player=spawn(p);}
@@ -139,7 +139,7 @@ present :: () {
 }
 
 Entity :: struct {
-    using entity_base: Entity_Base;
+    using #as entity_base: Entity_Base;
     position: Vector2;
     position_previous: Vector2;
     velocity: Vector2;

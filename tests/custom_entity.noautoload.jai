@@ -1,15 +1,15 @@
 Entity :: struct {
-    using entity_base: Entity_Base;
+    using #as entity_base: Entity_Base;
     position: Vector2;
 }
 
 Player :: struct {
-    using base: Entity;
+    using #as base: Entity;
     health: int = 100;
 }
 
 Enemy :: struct {
-    using base: Entity;
+    using #as base: Entity;
     health: int = 50;
 }
 

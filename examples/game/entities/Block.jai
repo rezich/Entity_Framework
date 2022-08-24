@@ -1,5 +1,5 @@
 Block :: struct @bucket_size=64 {
-    using base: Entity;
+    using #as base: Entity;
     number: int;
 }
 

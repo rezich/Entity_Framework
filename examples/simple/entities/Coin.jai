@@ -1,5 +1,5 @@
 Coin :: struct {
-    using base: Entity;
+    using #as base: Entity;
     style: Coin_Style;
 }
 

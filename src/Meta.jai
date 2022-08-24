@@ -127,7 +127,7 @@ XX
         builder: String_Builder;
         defer free_buffers(*builder);
         for `entity_type_names {
-            items_per_bucket, success := table_find(entity_items_per_bucket, it);
+            items_per_bucket, success := table_find(*entity_items_per_bucket, it);
             assert(success);
             print_to_builder(*builder, str, it, items_per_bucket);
         }

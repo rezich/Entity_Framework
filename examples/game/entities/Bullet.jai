@@ -1,5 +1,5 @@
 Bullet :: struct @bucket_size=128 {
-    using base: Entity;
+    using #as base: Entity;
 }
 
 simulate :: (using bullet: *Bullet, dt: float) {

@@ -8,14 +8,14 @@
 //
 // or just use
 //
-// using base: Entity_Base;
+// using #as base: Entity_Base;
 //
 // in your entity struct definitions instead. it's up to you. however, it seems
 // that the most likely use cases for this necessitate additional members on
 // every entity, so, this is how you do that:
 
 Entity :: struct {
-    using entity_base: Entity_Base;
+    using #as entity_base: Entity_Base;
     position: Vector2;
 }
 

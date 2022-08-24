@@ -1,5 +1,5 @@
 Player :: struct @bucket_size=1 {
-    using base: Entity;
+    using #as base: Entity;
     firing: bool;
 }
 
