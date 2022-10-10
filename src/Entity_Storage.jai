@@ -91,11 +91,11 @@ despawn :: (handle: Handle($T)) {
     despawn(ptr);
 }
 
-despawn :: (using entity: *$T/Entity_Base) {
-    id = 0;
-    despawning = true;
+despawn :: (entity: *$T/Entity_Base) {
+    entity.id = 0;
+    entity.despawning = true;
     #insert #run sprint("despawning_array := *context.entity_storage._%.despawning;", T);
-    array_add(despawning_array, loc);
+    array_add(despawning_array, entity.loc);
 }
 
 get_handle :: (entity: *$T/Entity_Base) -> Handle(T) #must {
